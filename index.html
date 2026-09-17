@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventPulse / Оқиғалар — Іс-шаралар диспетчері</title>
+  <meta name="description" content="Кәсіби іс-шаралар мен оқиғаларды іздеу және бақылау платформасы." />
+  <meta property="og:title" content="EventPulse / Оқиғалар" />
+  <meta property="og:description" content="Кәсіби іс-шаралар мен оқиғаларды іздеу және бақылау платформасы." />
+  <style>
+    :root {
+      --bg-primary: #0F172A;
+      --bg-card: #1E293B;
+      --bg-card-hover: #273549;
+      --accent: #0EA5E9;
+      --accent-hover: #0284C7;
+      --accent-glow: rgba(14, 165, 233, 0.2);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border: #334155;
+      --border-light: #475569;
+      --radius-sm: 6px;
+      --radius: 10px;
+      --radius-lg: 14px;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    /* Top Navigation Bar */
+    header {
+      background-color: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #0EA5E9, #2563EB);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-subtitle {
+      font-size: 11px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    /* Geolocation Bar in Nav */
+    .geo-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .geo-indicator:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7);
+      animation: pulse-ring 1.8s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(14, 165, 233, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Lang Switcher */
+    .lang-switcher {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .lang-btn {
+      background: none;
+      border: none;
+      padding: 6px 12px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .lang-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* User Profile trigger */
+    .user-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 5px 12px 5px 6px;
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .user-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .user-avatar-sm {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+
+    /* Hero / Status Bar */
+    .hero-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .hero-info h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-info p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 16px;
+    }
+
+    .stat-badge {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      text-align: right;
+    }
+
+    .stat-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Filter & Search Bar */
+    .filter-wrapper {
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Quick Filter Pills */
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .filter-pills::-webkit-scrollbar { display: none; }
+
+    .pill-btn {
+      white-space: nowrap;
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill-btn:hover {
+      border-color: var(--border-light);
+      color: var(--text-main);
+    }
+
+    .pill-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Category Chips */
+    .categories-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .categories-bar::-webkit-scrollbar { display: none; }
+
+    .cat-btn {
+      white-space: nowrap;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .cat-btn:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .cat-btn.active {
+      background: rgba(14, 165, 233, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Event Grid */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+    }
+
+    .event-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .event-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-light);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-thumb-wrap {
+      position: relative;
+      height: 190px;
+      width: 100%;
+      background: #0b1120;
+      overflow: hidden;
+    }
+
+    .card-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .event-card:hover .card-thumb {
+      transform: scale(1.04);
+    }
+
+    .card-category-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .card-fav-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .card-fav-btn:hover {
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .card-fav-btn.active {
+      color: #EF4444;
+      border-color: #EF4444;
+    }
+
+    .card-fav-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .card-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .distance-tag {
+      color: var(--accent);
+      font-weight: 600;
+      background: rgba(14, 165, 233, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .card-venue {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-detail {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-detail:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(14, 165, 233, 0.05);
+    }
+
+    .btn-source {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-source:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    /* Empty State */
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 60px 20px;
+      text-align: center;
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+    }
+
+    .empty-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      color: var(--text-muted);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 29, 0.82);
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-window {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateY(14px) scale(0.98);
+      transition: transform 0.2s ease;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+    }
+
+    .modal-backdrop.open .modal-window {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-primary);
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .auth-tab-row {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Avatar Selection & Upload */
+    .avatar-preview-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 14px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .avatar-large {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--bg-card);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .avatar-upload-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .avatar-upload-trigger:hover {
+      border-color: var(--accent);
+    }
+
+    .avatar-presets {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .preset-chip {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      background: var(--bg-primary);
+      transition: all 0.15s;
+    }
+
+    .preset-chip:hover, .preset-chip.active {
+      border-color: var(--accent);
+      transform: scale(1.08);
+    }
+
+    /* Detail Modal Specifics */
+    .detail-cover {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      background: #000;
+    }
+
+    .detail-badges-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .program-timeline {
+      margin: 18px 0;
+      padding-left: 18px;
+      border-left: 2px solid var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -24px;
+      top: 5px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-card);
+    }
+
+    .timeline-time {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .timeline-title {
+      font-size: 13px;
+      color: var(--text-main);
+    }
+
+    .venue-map-placeholder {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+    }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      color: var(--text-main);
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.25s ease-out;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero-panel { flex-direction: column; align-items: flex-start; }
+      .hero-stats { width: 100%; justify-content: space-between; }
+      .events-grid { grid-template-columns: 1fr; }
+      .nav-container { padding: 10px 14px; }
+      .geo-indicator span.geo-coords { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="nav-container">
+      <div class="logo-group" id="logo-refresh" title="EventPulse">
+        <div class="logo-icon">EP</div>
+        <div class="logo-text">
+          <span class="logo-title">EventPulse</span>
+          <span class="logo-subtitle" id="logo-sub">ОҚИҒАЛАР ДИСПЕТЧЕРІ</span>
+        </div>
+      </div>
+
+      <!-- Geolocation indicator -->
+      <div class="geo-indicator" id="geo-btn" title="Орналасқан жерді жаңарту / Сменить геолокацию">
+        <div class="pulse-dot"></div>
+        <span id="geo-city-text">Астана</span>
+        <span class="geo-coords" id="geo-coords-text">(51.16° N, 71.44° E)</span>
+      </div>
+
+      <!-- Right Actions: Language + Auth/Profile -->
+      <div class="nav-actions">
+        <!-- Multilingual Switcher -->
+        <div class="lang-switcher">
+          <button type="button" class="lang-btn active" id="lang-kz" onclick="setLanguage('kz')">ҚАЗ</button>
+          <button type="button" class="lang-btn" id="lang-ru" onclick="setLanguage('ru')">РУС</button>
+        </div>
+
+        <!-- Auth / Profile Button -->
+        <button type="button" class="user-btn" id="user-profile-btn" onclick="handleUserBtnClick()">
+          <div class="user-avatar-sm" id="nav-avatar">G</div>
+          <span id="nav-username">Кіру</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main>
+    <!-- Hero / Status Banner -->
+    <section class="hero-panel">
+      <div class="hero-info">
+        <h1 id="hero-heading">Қалаңыздағы барлық маңызды іс-шаралар</h1>
+        <p id="hero-subheading">Өзекті конференциялар, көрмелер, театр қойылымдары мен концерттер бір жерде</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-badge">
+          <div class="stat-val" id="stat-count">8</div>
+          <div class="stat-label" id="stat-events-label">Қолжетімді</div>
+        </div>
+        <div class="stat-badge">
+          <div class="stat-val" id="stat-saved-count">0</div>
+          <div class="stat-label" id="stat-saved-label">Таңдаулы</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Search Toolbar -->
+    <section class="filter-wrapper">
+      <div class="search-row">
+        <div class="search-input-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" class="search-input" placeholder="Іс-шара немесе орын бойынша іздеу..." oninput="filterEvents()" />
+        </div>
+
+        <!-- Time / Distance quick filters -->
+        <div class="filter-pills">
+          <button class="pill-btn active" data-filter="all" onclick="setTimeFilter('all', this)" id="pill-all">Барлығы</button>
+          <button class="pill-btn" data-filter="nearest" onclick="setTimeFilter('nearest', this)" id="pill-nearest">Ближайшие / Ең жақын</button>
+          <button class="pill-btn" data-filter="today" onclick="setTimeFilter('today', this)" id="pill-today">Бүгін</button>
+          <button class="pill-btn" data-filter="week" onclick="setTimeFilter('week', this)" id="pill-week">Осы аптада</button>
+          <button class="pill-btn" data-filter="saved" onclick="setTimeFilter('saved', this)" id="pill-saved">Таңдаулылар</button>
+        </div>
+      </div>
+
+      <!-- Categories Bar -->
+      <div class="categories-bar" id="categories-bar">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Events Grid -->
+    <section class="events-grid" id="events-grid">
+      <!-- Cards rendered dynamically -->
+    </section>
+  </main>
+
+  <!-- Geolocation Modal -->
+  <div class="modal-backdrop" id="geo-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title" id="geo-modal-title">Геолокация баптаулары</div>
+        <button class="modal-close-btn" onclick="closeModal('geo-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;" id="geo-modal-desc">
+          Браузеріңіздің нақты GPS координаталарын пайдаланыңыз немесе тізімнен қаланы таңдаңыз.
+        </p>
+        <button class="btn-source" style="width: 100%; margin-bottom: 16px;" onclick="requestLiveLocation()" id="geo-req-btn">
+          📡 GPS арқылы анықтау
+        </button>
+        <div class="form-group">
+          <label class="form-label" id="geo-select-label">Қаланы таңдау</label>
+          <select class="form-input" id="city-selector" onchange="selectManualCity(this.value)">
+            <option value="astana">Астана (51.1694° N, 71.4491° E)</option>
+            <option value="almaty">Алматы (43.2389° N, 76.8897° E)</option>
+            <option value="shymkent">Шымкент (42.3417° N, 69.5901° E)</option>
+            <option value="karaganda">Қарағанды (49.8047° N, 73.1094° E)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Detail Modal -->
+  <div class="modal-backdrop" id="detail-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-event-title">Іс-шара туралы</div>
+        <button class="modal-close-btn" onclick="closeModal('detail-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-detail-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer" id="modal-detail-footer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal (Login / Register) -->
+  <div class="modal-backdrop" id="auth-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title" id="auth-modal-title">Жеке кабинетке кіру</div>
+        <button class="modal-close-btn" onclick="closeModal('auth-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tab-row">
+          <button class="auth-tab-btn active" id="tab-login" onclick="switchAuthTab('login')">Кіру / Войти</button>
+          <button class="auth-tab-btn" id="tab-register" onclick="switchAuthTab('register')">Тіркелу / Регистрация</button>
+        </div>
+
+        <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+          <div class="form-group" id="group-name" style="display: none;">
+            <label class="form-label" id="lbl-name">Толық аты-жөніңіз (Имя)</label>
+            <input type="text" id="auth-name" class="form-input" placeholder="Мысалы: Арман Қасымов" />
+          </div>
+
+          <div class="form-group" id="group-username" style="display: none;">
+            <label class="form-label" id="lbl-username">Юзернейм (@username)</label>
+            <input type="text" id="auth-username" class="form-input" placeholder="@arman_kz" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="lbl-email">Электронды пошта (Email)</label>
+            <input type="email" id="auth-email" class="form-input" required placeholder="user@domain.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="lbl-password">Құпиясөз (Пароль)</label>
+            <input type="password" id="auth-password" class="form-input" required placeholder="••••••••" />
+          </div>
+
+          <button type="submit" class="btn-source" style="width: 100%; margin-top: 10px;" id="auth-submit-btn">
+            Кіру
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profile Modal -->
+  <div class="modal-backdrop" id="profile-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title" id="profile-modal-title">Жеке кабинет баптаулары</div>
+        <button class="modal-close-btn" onclick="closeModal('profile-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Avatar Section -->
+        <div class="avatar-preview-box">
+          <div class="avatar-large" id="profile-avatar-preview">A</div>
+          <div>
+            <label class="avatar-upload-trigger">
+              📷 Сурет жүктеу / Фото
+              <input type="file" id="avatar-file-input" accept="image/*" style="display: none;" onchange="handleCustomAvatarUpload(event)" />
+            </label>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="avatar-hint">
+              JPG, PNG немесе ID құжат суреті
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label class="form-label" id="system-avatars-label">Жүйелік аватарлар</label>
+          <div class="avatar-presets">
+            <div class="preset-chip" onclick="selectPresetAvatar('💼')">💼</div>
+            <div class="preset-chip" onclick="selectPresetAvatar('🚀')">🚀</div>
+            <div class="preset-chip" onclick="selectPresetAvatar('🎭')">🎭</div>
+            <div class="preset-chip" onclick="selectPresetAvatar('🎧')">🎧</div>
+            <div class="preset-chip" onclick="selectPresetAvatar('⚡')">⚡</div>
+          </div>
+        </div>
+
+        <form id="profile-form" onsubmit="handleProfileUpdate(event)">
+          <div class="form-group">
+            <label class="form-label" id="prof-name-lbl">Атыңыз (Nickname)</label>
+            <input type="text" id="prof-name" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="prof-uname-lbl">Юзернейм (@username)</label>
+            <input type="text" id="prof-uname" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="prof-email-lbl">Email (өзгермейді)</label>
+            <input type="text" id="prof-email" class="form-input" disabled style="opacity: 0.6;" />
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn-source" style="flex: 1;" id="save-profile-btn">
+              Сақтау
+            </button>
+            <button type="button" class="btn-detail" onclick="handleLogout()" style="color: #EF4444; border-color: #EF4444;" id="logout-btn">
+              Шығу
+            </button>
+          </div>
+        </form>
+
+        <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border);">
+          <div class="modal-title" style="font-size: 15px; margin-bottom: 12px;" id="saved-in-profile-title">
+            Таңдаулы іс-шараларым
+          </div>
+          <div id="profile-saved-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <script>
+    /* ==========================================================================
+       1. DATA STRUCTURE & LOCALIZATION
+       ========================================================================== */
+    const I18N = {
+      kz: {
+        logoSub: "ОҚИҒАЛАР ДИСПЕТЧЕРІ",
+        heroHeading: "Қалаңыздағы барлық маңызды іс-шаралар",
+        heroSubheading: "Өзекті конференциялар, көрмелер, театр қойылымдары мен концерттер бір жерде",
+        available: "Қолжетімді",
+        favorite: "Таңдаулы",
+        searchPlaceholder: "Іс-шара немесе орын бойынша іздеу...",
+        all: "Барлығы",
+        nearest: "Ең жақын",
+        today: "Бүгін",
+        week: "Осы аптада",
+        saved: "Таңдаулылар",
+        catAll: "Барлық санаттар",
+        catTech: "IT & Бизнес",
+        catArt: "Өнер & Мәдениет",
+        catMusic: "Музыка & Концерт",
+        catSport: "Спорт",
+        catEdu: "Білім & Лекциялар",
+        loginBtn: "Кіру",
+        logoutBtn: "Шығу",
+        detailBtn: "Толығырақ",
+        sourceBtn: "Дереккөзге өту",
+        fromYou: "сізден",
+        emptyTitle: "Іс-шаралар табылмады",
+        emptyDesc: "Таңдалған сүзгі немесе іздеу сөзі бойынша нәтиже жоқ.",
+        gpsActive: "GPS белсенді",
+        gpsManual: "Қолмен таңдалған",
+        geoTitle: "Геолокация баптаулары",
+        geoDesc: "Браузеріңіздің нақты GPS координаталарын пайдаланыңыз немесе тізімнен қаланы таңдаңыз.",
+        geoBtn: "📡 GPS арқылы анықтау",
+        geoCitySelect: "Қаланы таңдау",
+        authLoginTitle: "Жеке кабинетке кіру",
+        authRegTitle: "Жаңа есептік жазба ашу",
+        tabLogin: "Кіру",
+        tabReg: "Тіркелу",
+        nameLabel: "Толық аты-жөніңіз (Имя)",
+        usernameLabel: "Юзернейм (@username)",
+        emailLabel: "Электронды пошта (Email)",
+        passwordLabel: "Құпиясөз (Пароль)",
+        saveBtn: "Сақтау",
+        profileTitle: "Жеке кабинет баптаулары",
+        avatarUpload: "📷 Сурет жүктеу",
+        avatarHint: "JPG, PNG немесе ID құжат суреті",
+        systemAvatars: "Жүйелік аватарлар",
+        savedEventsTitle: "Таңдаулы іс-шараларым",
+        noSavedEvents: "Әзірге таңдаулы іс-шаралар жоқ",
+        programTitle: "Іс-шара бағдарламасы",
+        venueTitle: "Өтетін орны мен мекенжайы",
+        ticketFrom: "Билет құны:",
+        freeEntry: "Тегін кіру",
+        routeBtn: "2GIS / Google Maps картасынан қарау",
+        toastSaved: "Іс-шара таңдаулыларға қосылды",
+        toastRemoved: "Іс-шара таңдаулылардан алынып тасталды",
+        toastLoginSuccess: "Қош келдіңіз!",
+        toastRegSuccess: "Тіркелу сәтті өтті!",
+        toastProfileUpdated: "Профиль баптаулары сақталды",
+        toastLogout: "Сіз жүйеден шықтыңыз"
+      },
+      ru: {
+        logoSub: "ДИСПЕТЧЕР СОБЫТИЙ",
+        heroHeading: "Все ключевые события и мероприятия вашего города",
+        heroSubheading: "Актуальные конференции, выставки, театр и концерты на единой бизнес-платформе",
+        available: "Доступно",
+        favorite: "Избранное",
+        searchPlaceholder: "Поиск по названию или площадке...",
+        all: "Все",
+        nearest: "Ближайшие",
+        today: "Сегодня",
+        week: "На этой неделе",
+        saved: "Избранное",
+        catAll: "Все категории",
+        catTech: "IT и Бизнес",
+        catArt: "Искусство и Театр",
+        catMusic: "Музыка и Концерты",
+        catSport: "Спорт",
+        catEdu: "Образование и Лекции",
+        loginBtn: "Войти",
+        logoutBtn: "Выйти",
+        detailBtn: "Подробнее",
+        sourceBtn: "Перейти к источнику",
+        fromYou: "от вас",
+        emptyTitle: "Мероприятия не найдены",
+        emptyDesc: "По заданным фильтрам или поисковому запросу ничего не найдено.",
+        gpsActive: "GPS активен",
+        gpsManual: "Выбран вручную",
+        geoTitle: "Настройки геолокации",
+        geoDesc: "Используйте координаты браузера или выберите город из списка ниже.",
+        geoBtn: "📡 Определить через GPS",
+        geoCitySelect: "Выбрать город",
+        authLoginTitle: "Вход в личный кабинет",
+        authRegTitle: "Регистрация аккаунта",
+        tabLogin: "Вход",
+        tabReg: "Регистрация",
+        nameLabel: "Полное имя",
+        usernameLabel: "Юзернейм (@username)",
+        emailLabel: "Электронная почта (Email)",
+        passwordLabel: "Пароль",
+        saveBtn: "Сохранить",
+        profileTitle: "Настройки профиля",
+        avatarUpload: "📷 Загрузить фото",
+        avatarHint: "JPG, PNG или фото ID документа",
+        systemAvatars: "Системные аватары",
+        savedEventsTitle: "Мои сохраненные события",
+        noSavedEvents: "В избранном пока нет событий",
+        programTitle: "Программа мероприятия",
+        venueTitle: "Место проведения и адрес",
+        ticketFrom: "Стоимость билета:",
+        freeEntry: "Вход свободный",
+        routeBtn: "Открыть маршрут в 2GIS / Google Maps",
+        toastSaved: "Событие добавлено в избранное",
+        toastRemoved: "Событие удалено из избранного",
+        toastLoginSuccess: "Добро пожаловать в систему!",
+        toastRegSuccess: "Регистрация успешно завершена!",
+        toastProfileUpdated: "Настройки профиля сохранены",
+        toastLogout: "Вы вышли из системы"
+      }
+    };
+
+    const CITIES = {
+      astana: { nameKz: "Астана", nameRu: "Астана", lat: 51.1694, lng: 71.4491 },
+      almaty: { nameKz: "Алматы", nameRu: "Алматы", lat: 43.2389, lng: 76.8897 },
+      shymkent: { nameKz: "Шымкент", nameRu: "Шымкент", lat: 42.3417, lng: 69.5901 },
+      karaganda: { nameKz: "Қарағанды", nameRu: "Караганда", lat: 49.8047, lng: 73.1094 }
+    };
+
+    const EVENTS_DATABASE = [
+      {
+        id: "evt-1",
+        titleKz: "Digital Bridge & AI Summit 2026",
+        titleRu: "Digital Bridge & AI Summit 2026",
+        category: "tech",
+        date: "2026-09-24",
+        time: "09:30 - 18:00",
+        venueKz: "EXPO Халықаралық көрме орталығы, Астана",
+        venueRu: "МВЦ EXPO, Конгресс-Центр, Астана",
+        address: "Мәңгілік Ел даңғылы, 53/1",
+        lat: 51.0894,
+        lng: 71.4172,
+        priceKz: "Тегін (алдын ала тіркелу)",
+        priceRu: "Бесплатно (по регистрации)",
+        image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://ticketon.kz",
+        sourceName: "Ticketon.kz / Astana Hub",
+        descKz: "Орталық Азиядағы ең ірі халықаралық IT-технологиялар және жасанды интеллект форумы. Жетекші венчурлық қорлар мен стартаптар басқосуы.",
+        descRu: "Крупнейший в Центральной Азии международный форум по искусственному интеллекту, стартапам и венчурным инвестициям с участием топ-спикеров.",
+        program: [
+          { time: "09:30", titleKz: "Қатысушыларды тіркеу және Welcome Coffee", titleRu: "Регистрация участников и Welcome Coffee" },
+          { time: "11:00", titleKz: "Пленарлық сессия: Generative AI болашағы", titleRu: "Пленарная сессия: Будущее Generative AI" },
+          { time: "14:30", titleKz: "Startup Pitch Battle & Инвесторлар кездесуі", titleRu: "Startup Pitch Battle & Встреча с инвесторами" },
+          { time: "17:00", titleKz: "Networking & Серіктестік келісімдері", titleRu: "Networking и партнерские соглашения" }
+        ]
+      },
+      {
+        id: "evt-2",
+        titleKz: "\"Nomad Art & Heritage\" заманауи өнер көрмесі",
+        titleRu: "Выставка современного искусства \"Nomad Art & Heritage\"",
+        category: "art",
+        date: "2026-09-17",
+        time: "10:00 - 19:00",
+        venueKz: "ҚР Ұлттық музейі, Астана",
+        venueRu: "Национальный музей РК, Астана",
+        address: "Тәуелсіздік даңғылы, 54",
+        lat: 51.1218,
+        lng: 71.4725,
+        priceKz: "1 500 ₸ - 3 000 ₸",
+        priceRu: "1 500 ₸ - 3 000 ₸",
+        image: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://sxodin.com",
+        sourceName: "Sxodin.com",
+        descKz: "Көшпелі өркениет мұрасын заманауи инсталляциялар, медиа-арт және дәстүрлі кескіндеме арқылы көрсететін халықаралық экспозиция.",
+        descRu: "Экспозиция объединяет наследие номадов с новейшим медиа-артом, скульптурой и концептуальной живописью лучших авторов Казахстана.",
+        program: [
+          { time: "10:00", titleKz: "Экспозиция залының ашылуы", titleRu: "Открытие экспозиционных залов" },
+          { time: "14:00", titleKz: "Кураторлық экскурсия және авторлармен сұхбат", titleRu: "Кураторская экскурсия и диалог с авторами" },
+          { time: "16:30", titleKz: "Интерактивті медиа-арт перформансы", titleRu: "Интерактивный медиа-арт перформанс" }
+        ]
+      },
+      {
+        id: "evt-3",
+        titleKz: "\"Абай\" классикалық опералық қойылымы",
+        titleRu: "Опера \"Абай\" (А. Жұбанов, Л. Хамиди)",
+        category: "art",
+        date: "2026-09-19",
+        time: "18:00 - 20:30",
+        venueKz: "\"Астана Опера\" мемлекеттік театры",
+        venueRu: "Государственный театр оперы и балета \"Астана Опера\"",
+        address: "Дінмұхамед Қонаев көшесі, 1",
+        lat: 51.1278,
+        lng: 71.4128,
+        priceKz: "2 000 ₸ - 12 000 ₸",
+        priceRu: "2 000 ₸ - 12 000 ₸",
+        image: "https://images.unsplash.com/photo-1469488865564-c2de10f69f96?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://ticketon.kz",
+        sourceName: "Ticketon.kz",
+        descKz: "Қазақ музыкалық өнерінің жауһары. Данышпан ойшыл, ақын Абай Құнанбайұлының рухы мен өмірлік күресін сипаттайтын шедевр.",
+        descRu: "Жемчужина национальной оперной классики. Грандиозные декорации, виртуозный симфонический оркестр и признанные мастера сцены.",
+        program: [
+          { time: "17:30", titleKz: "Көрермендерді қабылдау", titleRu: "Сбор зрителей в фойе" },
+          { time: "18:00", titleKz: "I бөлім: Екі әрекетті қойылым", titleRu: "I отделение оперы" },
+          { time: "19:15", titleKz: "Антракт", titleRu: "Антракт" },
+          { time: "19:35", titleKz: "II бөлім және Финал", titleRu: "II отделение и Финал" }
+        ]
+      },
+      {
+        id: "evt-4",
+        titleKz: "Симфониялық Hans Zimmer & Interstellar Tribute",
+        titleRu: "Симфонический концерт Hans Zimmer & Interstellar Tribute",
+        category: "music",
+        date: "2026-09-20",
+        time: "19:00 - 21:00",
+        venueKz: "ЦКЗ \"Qazaqstan\", Астана",
+        venueRu: "ЦКЗ \"Qazaqstan\", Астана",
+        address: "Мәңгілік Ел даңғылы, 10/1",
+        lat: 51.1225,
+        lng: 71.4344,
+        priceKz: "6 000 ₸ - 22 000 ₸",
+        priceRu: "6 000 ₸ - 22 000 ₸",
+        image: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://afisha.yandex.kz",
+        sourceName: "Yandex Afisha",
+        descKz: "Әлемге әйгілі киносаундтректер шедеврі: Inception, Gladiator, The Dark Knight және Interstellar тірі симфониялық оркестр орындауында.",
+        descRu: "Живое исполнение культовых саундтреков Ханса Циммера в сопровождении симфонического оркестра и визуального шоу.",
+        program: [
+          { time: "19:00", titleKz: "I бөлім: Gladiator & Pirates of the Caribbean", titleRu: "I отделение: Gladiator & Pirates of the Caribbean" },
+          { time: "20:00", titleKz: "Антракт", titleRu: "Антракт" },
+          { time: "20:20", titleKz: "II бөлім: Interstellar & Inception Suite", titleRu: "II отделение: Interstellar & Inception Suite" }
+        ]
+      },
+      {
+        id: "evt-5",
+        titleKz: "Central Asia Tech & Venture Day",
+        titleRu: "Central Asia Tech & Venture Day 2026",
+        category: "tech",
+        date: "2026-09-17",
+        time: "10:00 - 17:00",
+        venueKz: "The Ritz-Carlton Almaty",
+        venueRu: "The Ritz-Carlton Almaty",
+        address: "Әл-Фараби даңғылы, 77/7, Алматы",
+        lat: 43.2185,
+        lng: 76.9281,
+        priceKz: "25 000 ₸ (Бизнес билет)",
+        priceRu: "25 000 ₸ (Бизнес билет)",
+        image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://ticketon.kz",
+        sourceName: "Ticketon.kz",
+        descKz: "Тәуелсіз венчурлық инвесторлар, Angel синдикаттары мен Финтех жетекшілерінің жабық форматтағы кездесуі.",
+        descRu: "Закрытый инвестиционный саммит технологических компаний, венчурных фондов и основателей масштабируемых стартапов.",
+        program: [
+          { time: "10:00", titleKz: "Macroeconomic Overview & Venture Trends", titleRu: "Macroeconomic Overview & Venture Trends" },
+          { time: "13:00", titleKz: "Networking Lunch", titleRu: "Networking Lunch" },
+          { time: "15:00", titleKz: "B2B Deal-making Session", titleRu: "B2B Deal-making Session" }
+        ]
+      },
+      {
+        id: "evt-6",
+        titleKz: "Astana Half Marathon & 10K Run",
+        titleRu: "Astana Half Marathon & 10K Run",
+        category: "sport",
+        date: "2026-09-27",
+        time: "07:30 - 12:00",
+        venueKz: "Триатлон Парк Астана",
+        venueRu: "Триатлон Парк Астана",
+        address: "Бауыржан Момышұлы даңғылы",
+        lat: 51.1378,
+        lng: 71.4552,
+        priceKz: "5 000 ₸ (Старттық пакет)",
+        priceRu: "5 000 ₸ (Стартовый пакет)",
+        image: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://sxodin.com",
+        sourceName: "Sxodin.com / Astana Marathon",
+        descKz: "Қала тұрғындары мен халықаралық спортшыларға арналған күзгі марафон. 21.1 км және 10 км қашықтықтар.",
+        descRu: "Ежегодный осенний забег на набережной Ишима и в Триатлон Парке с электронной фиксацией времени и памятными медалями.",
+        program: [
+          { time: "07:00", titleKz: "Старттық қалашықтың ашылуы және бой жазу", titleRu: "Открытие стартового городка и разминка" },
+          { time: "07:45", titleKz: "21.1 км жүгірушілер старты", titleRu: "Старт дистанции 21.1 км" },
+          { time: "10:30", titleKz: "Жеңімпаздарды марапаттау салтанаты", titleRu: "Церемония награждения победителей" }
+        ]
+      },
+      {
+        id: "evt-7",
+        titleKz: "Future Urbanism: Ақылды қалалар архитектурасы",
+        titleRu: "Архитектурный воркшоп Future Urbanism: Smart Cities",
+        category: "edu",
+        date: "2026-09-22",
+        time: "15:00 - 18:30",
+        venueKz: "Nazarbayev University (NU Hall)",
+        venueRu: "Nazarbayev University (NU Hall)",
+        address: "Қабанбай батыр даңғылы, 53",
+        lat: 51.0905,
+        lng: 71.3986,
+        priceKz: "Тегін (алдын ала аккредитация)",
+        priceRu: "Бесплатно (по аккредитации)",
+        image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://ticketon.kz",
+        sourceName: "Ticketon.kz",
+        descKz: "Қалалық ортаны экологиялық және цифрлық модельдеуге арналған халықаралық сәулетшілер мен урбанистер семинары.",
+        descRu: "Открытая лекция и практикум по устойчивому развитию мегаполисов, климатической адаптации и цифровой инфраструктуре.",
+        program: [
+          { time: "15:00", titleKz: "Кіріспе лекция: Урбанистикадағы жаңа парадигмалар", titleRu: "Вводная лекция: Новые парадигмы урбанизма" },
+          { time: "16:30", titleKz: "Интерактивті топтық кейс-стади", titleRu: "Интерактивный командный кейс-стади" },
+          { time: "18:00", titleKz: "Қорытынды пікірталас және Q&A", titleRu: "Итоговая дискуссия и Q&A" }
+        ]
+      },
+      {
+        id: "evt-8",
+        titleKz: "Almaty Jazz & Soul Live Sessions",
+        titleRu: "Джазовый вечер Almaty Jazz & Soul Live Sessions",
+        category: "music",
+        date: "2026-09-18",
+        time: "20:00 - 22:30",
+        venueKz: "Жамбыл атындағы Қазақ мемлекеттік филармониясы",
+        venueRu: "Казахская государственная филармония им. Жамбыла",
+        address: "Төле би көшесі, 21, Алматы",
+        lat: 43.2551,
+        lng: 76.9536,
+        priceKz: "4 000 ₸ - 15 000 ₸",
+        priceRu: "4 000 ₸ - 15 000 ₸",
+        image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800&auto=format&fit=crop&q=80",
+        sourceUrl: "https://ticketon.kz",
+        sourceName: "Ticketon.kz",
+        descKz: "Қазақстан мен шетелдік джаз виртуоздарының орындауындағы классикалық импровизациялар және заманауи соул композициялары.",
+        descRu: "Изысканный вечер джазовой импровизации, фанка и соул-музыки от ведущих казахстанских и международных музыкантов.",
+        program: [
+          { time: "19:30", titleKz: "Қонақтарды жинау, холлдағы акустика", titleRu: "Сбор гостей, акустический сет в холле" },
+          { time: "20:00", titleKz: "Негізгі бағдарламаның басталуы", titleRu: "Начало основной программы" },
+          { time: "21:40", titleKz: "Jam Session & Арнайы қонақтар", titleRu: "Jam Session & Специальные гости" }
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       2. APPLICATION STATE
+       ========================================================================== */
+    let currentLang = localStorage.getItem("eventpulse_lang") || "kz";
+    let currentUser = JSON.parse(localStorage.getItem("eventpulse_user") || "null");
+    let savedEventIds = JSON.parse(localStorage.getItem("eventpulse_saved") || "[]");
+    
+    // Default location (Astana)
+    let userLocation = {
+      lat: 51.1694,
+      lng: 71.4491,
+      cityKz: "Астана",
+      cityRu: "Астана",
+      isGps: false
+    };
+
+    let selectedTimeFilter = "all";
+    let selectedCategory = "all";
+    let searchQuery = "";
+    let authMode = "login"; // 'login' | 'register'
+
+    /* ==========================================================================
+       3. GEOLOCATION ENGINE
+       ========================================================================== */
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Radius of earth in km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function initGeolocation() {
+      // Check saved city preference
+      const savedCityKey = localStorage.getItem("eventpulse_city_key");
+      if (savedCityKey && CITIES[savedCityKey]) {
+        const c = CITIES[savedCityKey];
+        userLocation = { lat: c.lat, lng: c.lng, cityKz: c.nameKz, cityRu: c.nameRu, isGps: false };
+        updateGeoUI();
+      }
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            userLocation.lat = position.coords.latitude;
+            userLocation.lng = position.coords.longitude;
+            userLocation.isGps = true;
+            // Determine closest known city
+            let closest = "astana";
+            let minDist = 999999;
+            for (const key in CITIES) {
+              const d = calculateDistance(userLocation.lat, userLocation.lng, CITIES[key].lat, CITIES[key].lng);
+              if (d < minDist) {
+                minDist = d;
+                closest = key;
+              }
+            }
+            userLocation.cityKz = CITIES[closest].nameKz;
+            userLocation.cityRu = CITIES[closest].nameRu;
+            updateGeoUI();
+            renderEvents();
+            showToast(currentLang === 'kz' ? "Геолокация сәтті анықталды" : "Геолокация определена");
+          },
+          (err) => {
+            console.warn("Geolocation denied or unavailable:", err.message);
+            updateGeoUI();
+          },
+          { timeout: 8000 }
+        );
+      }
+    }
+
+    function requestLiveLocation() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            userLocation.lat = pos.coords.latitude;
+            userLocation.lng = pos.coords.longitude;
+            userLocation.isGps = true;
+            updateGeoUI();
+            renderEvents();
+            closeModal('geo-modal');
+            showToast(currentLang === 'kz' ? "GPS координаталары жаңартылды" : "GPS координаты обновлены");
+          },
+          (err) => {
+            showToast(currentLang === 'kz' ? "GPS рұқсаты берілмеді" : "Доступ к GPS отклонен");
+          }
+        );
+      }
+    }
+
+    function selectManualCity(cityKey) {
+      if (CITIES[cityKey]) {
+        const c = CITIES[cityKey];
+        userLocation = { lat: c.lat, lng: c.lng, cityKz: c.nameKz, cityRu: c.nameRu, isGps: false };
+        localStorage.setItem("eventpulse_city_key", cityKey);
+        updateGeoUI();
+        renderEvents();
+        closeModal('geo-modal');
+        showToast((currentLang === 'kz' ? c.nameKz : c.nameRu) + (currentLang === 'kz' ? " қаласы таңдалды" : " выбран"));
+      }
+    }
+
+    function updateGeoUI() {
+      const cityName = currentLang === 'kz' ? userLocation.cityKz : userLocation.cityRu;
+      document.getElementById('geo-city-text').textContent = cityName;
+      document.getElementById('geo-coords-text').textContent = 
+        `(${userLocation.lat.toFixed(2)}°, ${userLocation.lng.toFixed(2)}°)`;
+    }
+
+    /* ==========================================================================
+       4. I18N & RENDER CONTROLLERS
+       ========================================================================== */
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("eventpulse_lang", lang);
+
+      // Buttons active state
+      document.getElementById('lang-kz').classList.toggle('active', lang === 'kz');
+      document.getElementById('lang-ru').classList.toggle('active', lang === 'ru');
+
+      const t = I18N[lang];
+      document.getElementById('logo-sub').textContent = t.logoSub;
+      document.getElementById('hero-heading').textContent = t.heroHeading;
+      document.getElementById('hero-subheading').textContent = t.heroSubheading;
+      document.getElementById('stat-events-label').textContent = t.available;
+      document.getElementById('stat-saved-label').textContent = t.favorite;
+      document.getElementById('search-input').placeholder = t.searchPlaceholder;
+
+      document.getElementById('pill-all').textContent = t.all;
+      document.getElementById('pill-nearest').textContent = t.nearest;
+      document.getElementById('pill-today').textContent = t.today;
+      document.getElementById('pill-week').textContent = t.week;
+      document.getElementById('pill-saved').textContent = t.saved;
+
+      // Geolocation texts
+      document.getElementById('geo-modal-title').textContent = t.geoTitle;
+      document.getElementById('geo-modal-desc').textContent = t.geoDesc;
+      document.getElementById('geo-req-btn').textContent = t.geoBtn;
+      document.getElementById('geo-select-label').textContent = t.geoCitySelect;
+
+      // Auth modal texts
+      document.getElementById('auth-modal-title').textContent = authMode === 'login' ? t.authLoginTitle : t.authRegTitle;
+      document.getElementById('tab-login').textContent = t.tabLogin;
+      document.getElementById('tab-register').textContent = t.tabReg;
+      document.getElementById('lbl-name').textContent = t.nameLabel;
+      document.getElementById('lbl-username').textContent = t.usernameLabel;
+      document.getElementById('lbl-email').textContent = t.emailLabel;
+      document.getElementById('lbl-password').textContent = t.passwordLabel;
+      document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? t.tabLogin : t.tabReg;
+
+      // Profile modal texts
+      document.getElementById('profile-modal-title').textContent = t.profileTitle;
+      document.getElementById('avatar-hint').textContent = t.avatarHint;
+      document.getElementById('system-avatars-label').textContent = t.systemAvatars;
+      document.getElementById('prof-name-lbl').textContent = t.nameLabel;
+      document.getElementById('prof-uname-lbl').textContent = t.usernameLabel;
+      document.getElementById('save-profile-btn').textContent = t.saveBtn;
+      document.getElementById('logout-btn').textContent = t.logoutBtn;
+      document.getElementById('saved-in-profile-title').textContent = t.savedEventsTitle;
+
+      updateGeoUI();
+      updateUserNav();
+      renderCategories();
+      renderEvents();
+    }
+
+    function renderCategories() {
+      const t = I18N[currentLang];
+      const categories = [
+        { id: "all", label: t.catAll },
+        { id: "tech", label: t.catTech },
+        { id: "art", label: t.catArt },
+        { id: "music", label: t.catMusic },
+        { id: "sport", label: t.catSport },
+        { id: "edu", label: t.catEdu }
+      ];
+
+      const container = document.getElementById('categories-bar');
+      container.innerHTML = categories.map(cat => `
+        <button class="cat-btn ${selectedCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')">
+          ${cat.label}
+        </button>
+      `).join('');
+    }
+
+    function setCategory(catId) {
+      selectedCategory = catId;
+      renderCategories();
+      renderEvents();
+    }
+
+    function setTimeFilter(filterId, el) {
+      selectedTimeFilter = filterId;
+      document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderEvents();
+    }
+
+    function filterEvents() {
+      searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+      renderEvents();
+    }
+
+    function renderEvents() {
+      const t = I18N[currentLang];
+      const grid = document.getElementById('events-grid');
+
+      // Calculate distance for all events
+      let list = EVENTS_DATABASE.map(item => {
+        const dist = calculateDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
+        return { ...item, distKm: dist };
+      });
+
+      // Filter by Category
+      if (selectedCategory !== "all") {
+        list = list.filter(item => item.category === selectedCategory);
+      }
+
+      // Filter by Search
+      if (searchQuery) {
+        list = list.filter(item => {
+          const title = currentLang === 'kz' ? item.titleKz : item.titleRu;
+          const venue = currentLang === 'kz' ? item.venueKz : item.venueRu;
+          const desc = currentLang === 'kz' ? item.descKz : item.descRu;
+          return title.toLowerCase().includes(searchQuery) ||
+                 venue.toLowerCase().includes(searchQuery) ||
+                 desc.toLowerCase().includes(searchQuery);
+        });
+      }
+
+      // Filter by Time / Distance
+      if (selectedTimeFilter === "nearest") {
+        list.sort((a, b) => a.distKm - b.distKm);
+      } else if (selectedTimeFilter === "today") {
+        // Mock current date as 2026-09-17
+        list = list.filter(item => item.date === "2026-09-17");
+      } else if (selectedTimeFilter === "week") {
+        list = list.filter(item => item.date >= "2026-09-17" && item.date <= "2026-09-24");
+      } else if (selectedTimeFilter === "saved") {
+        list = list.filter(item => savedEventIds.includes(item.id));
+      }
+
+      // Update Header Stats
+      document.getElementById('stat-count').textContent = list.length;
+      document.getElementById('stat-saved-count').textContent = savedEventIds.length;
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">${t.emptyTitle}</h3>
+            <p style="font-size: 13px; color: var(--text-muted);">${t.emptyDesc}</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = list.map(item => {
+        const title = currentLang === 'kz' ? item.titleKz : item.titleRu;
+        const venue = currentLang === 'kz' ? item.venueKz : item.venueRu;
+        const desc = currentLang === 'kz' ? item.descKz : item.descRu;
+        const isSaved = savedEventIds.includes(item.id);
+        const categoryLabel = getCategoryLabel(item.category);
+        const distFormatted = item.distKm < 1 ? `${Math.round(item.distKm * 1000)} м` : `${item.distKm.toFixed(1)} км`;
+
+        return `
+          <article class="event-card">
+            <div class="card-thumb-wrap">
+              <img src="${item.image}" alt="${title}" class="card-thumb" loading="lazy" />
+              <div class="card-category-badge">${categoryLabel}</div>
+              <button class="card-fav-btn ${isSaved ? 'active' : ''}" onclick="toggleSaveEvent('${item.id}', event)" title="Таңдаулыға қосу">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="card-body">
+              <div class="card-meta-row">
+                <div class="card-meta-item">
+                  <span>📅 ${item.date}</span>
+                  <span>•</span>
+                  <span>⏰ ${item.time}</span>
+                </div>
+                <div class="distance-tag">
+                  <span>📍</span>
+                  <span>${distFormatted} ${t.fromYou}</span>
+                </div>
+              </div>
+
+              <h2 class="card-title">${title}</h2>
+              <div class="card-venue">🏛️ ${venue}</div>
+              <p class="card-desc">${desc}</p>
+
+              <div class="card-actions">
+                <button class="btn-detail" onclick="openDetailModal('${item.id}')">
+                  ${t.detailBtn}
+                </button>
+                <a href="${item.sourceUrl}" target="_blank" rel="noopener noreferrer" class="btn-source" title="${item.sourceName}">
+                  ${t.sourceBtn} ↗
+                </a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function getCategoryLabel(catId) {
+      const t = I18N[currentLang];
+      switch(catId) {
+        case 'tech': return t.catTech;
+        case 'art': return t.catArt;
+        case 'music': return t.catMusic;
+        case 'sport': return t.catSport;
+        case 'edu': return t.catEdu;
+        default: return t.catAll;
+      }
+    }
+
+    /* ==========================================================================
+       5. FAVORITES MANAGEMENT
+       ========================================================================== */
+    function toggleSaveEvent(id, event) {
+      if (event) event.stopPropagation();
+      const t = I18N[currentLang];
+      const index = savedEventIds.indexOf(id);
+      if (index > -1) {
+        savedEventIds.splice(index, 1);
+        showToast(t.toastRemoved);
+      } else {
+        savedEventIds.push(id);
+        showToast(t.toastSaved);
+      }
+      localStorage.setItem("eventpulse_saved", JSON.stringify(savedEventIds));
+      renderEvents();
+      renderSavedInProfile();
+    }
+
+    /* ==========================================================================
+       6. MODALS MANAGEMENT
+       ========================================================================== */
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    // Close on backdrop click
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          backdrop.classList.remove('open');
+        }
+      });
+    });
+
+    document.getElementById('geo-btn').addEventListener('click', () => {
+      openModal('geo-modal');
+    });
+
+    document.getElementById('logo-refresh').addEventListener('click', () => {
+      selectedTimeFilter = "all";
+      selectedCategory = "all";
+      searchQuery = "";
+      document.getElementById('search-input').value = "";
+      document.querySelectorAll('.pill-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+      renderCategories();
+      renderEvents();
+    });
+
+    /* ==========================================================================
+       7. EVENT DETAIL MODAL
+       ========================================================================== */
+    function openDetailModal(id) {
+      const item = EVENTS_DATABASE.find(e => e.id === id);
+      if (!item) return;
+
+      const t = I18N[currentLang];
+      const title = currentLang === 'kz' ? item.titleKz : item.titleRu;
+      const venue = currentLang === 'kz' ? item.venueKz : item.venueRu;
+      const desc = currentLang === 'kz' ? item.descKz : item.descRu;
+      const price = currentLang === 'kz' ? item.priceKz : item.priceRu;
+      const isSaved = savedEventIds.includes(item.id);
+      const dist = calculateDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
+      const distFormatted = dist < 1 ? `${Math.round(dist * 1000)} м` : `${dist.toFixed(1)} км`;
+
+      document.getElementById('modal-event-title').textContent = title;
+
+      const body = document.getElementById('modal-detail-body');
+      body.innerHTML = `
+        <img src="${item.image}" alt="${title}" class="detail-cover" />
+
+        <div class="detail-badges-row">
+          <span class="card-category-badge" style="position: static;">${getCategoryLabel(item.category)}</span>
+          <span class="distance-tag">📍 ${distFormatted} ${t.fromYou}</span>
+          <span style="font-size: 12px; color: var(--text-muted);">📅 ${item.date} (${item.time})</span>
+        </div>
+
+        <p style="font-size: 14px; color: var(--text-main); margin-bottom: 16px; line-height: 1.6;">${desc}</p>
+
+        <div style="background: var(--bg-primary); border: 1px solid var(--border); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 18px;">
+          <div style="font-size: 12px; color: var(--text-muted);">${t.ticketFrom}</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent);">${price}</div>
+        </div>
+
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">${t.programTitle}</h4>
+        <div class="program-timeline">
+          ${item.program.map(p => `
+            <div class="timeline-item">
+              <div class="timeline-time">${p.time}</div>
+              <div class="timeline-title">${currentLang === 'kz' ? p.titleKz : p.titleRu}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 6px;">${t.venueTitle}</h4>
+        <div class="venue-map-placeholder">
+          <div>
+            <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${venue}</div>
+            <div style="font-size: 12px; color: var(--text-muted);">📍 ${item.address}</div>
+          </div>
+          <a href="https://maps.google.com/?q=${item.lat},${item.lng}" target="_blank" rel="noopener noreferrer" class="btn-detail" style="padding: 6px 12px; font-size: 12px;">
+            ${t.routeBtn}
+          </a>
+        </div>
+      `;
+
+      const footer = document.getElementById('modal-detail-footer');
+      footer.innerHTML = `
+        <button class="btn-detail" onclick="toggleSaveEvent('${item.id}'); openDetailModal('${item.id}');">
+          ${isSaved ? '❤️ ' + t.saved : '🤍 ' + t.favorite}
+        </button>
+        <a href="${item.sourceUrl}" target="_blank" rel="noopener noreferrer" class="btn-source">
+          ${t.sourceBtn} (${item.sourceName}) ↗
+        </a>
+      `;
+
+      openModal('detail-modal');
+    }
+
+    /* ==========================================================================
+       8. AUTHENTICATION & USER PROFILE
+       ========================================================================== */
+    function updateUserNav() {
+      const navBtn = document.getElementById('user-profile-btn');
+      const avatarEl = document.getElementById('nav-avatar');
+      const unameEl = document.getElementById('nav-username');
+      const t = I18N[currentLang];
+
+      if (currentUser) {
+        if (currentUser.avatar && currentUser.avatar.startsWith('data:')) {
+          avatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+        } else {
+          avatarEl.textContent = currentUser.avatar || currentUser.name.charAt(0).toUpperCase();
+        }
+        unameEl.textContent = currentUser.username || currentUser.name;
+      } else {
+        avatarEl.textContent = "G";
+        unameEl.textContent = t.loginBtn;
+      }
+    }
+
+    function handleUserBtnClick() {
+      if (currentUser) {
+        openProfileModal();
+      } else {
+        switchAuthTab('login');
+        openModal('auth-modal');
+      }
+    }
+
+    function switchAuthTab(mode) {
+      authMode = mode;
+      const t = I18N[currentLang];
+      document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+      document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+      document.getElementById('group-name').style.display = mode === 'register' ? 'block' : 'none';
+      document.getElementById('group-username').style.display = mode === 'register' ? 'block' : 'none';
+      document.getElementById('auth-submit-btn').textContent = mode === 'login' ? t.tabLogin : t.tabReg;
+      document.getElementById('auth-modal-title').textContent = mode === 'login' ? t.authLoginTitle : t.authRegTitle;
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value.trim();
+      const t = I18N[currentLang];
+
+      if (authMode === 'register') {
+        const name = document.getElementById('auth-name').value.trim() || "User";
+        const username = document.getElementById('auth-username').value.trim() || ("@" + email.split('@')[0]);
+        
+        currentUser = {
+          name: name,
+          username: username.startsWith('@') ? username : '@' + username,
+          email: email,
+          avatar: "💼"
+        };
+        localStorage.setItem("eventpulse_user", JSON.stringify(currentUser));
+        showToast(t.toastRegSuccess);
+      } else {
+        // Mock Login
+        currentUser = {
+          name: email.split('@')[0],
+          username: "@" + email.split('@')[0],
+          email: email,
+          avatar: "💼"
+        };
+        localStorage.setItem("eventpulse_user", JSON.stringify(currentUser));
+        showToast(t.toastLoginSuccess);
+      }
+
+      updateUserNav();
+      closeModal('auth-modal');
+    }
+
+    function openProfileModal() {
+      if (!currentUser) return;
+      document.getElementById('prof-name').value = currentUser.name;
+      document.getElementById('prof-uname').value = currentUser.username;
+      document.getElementById('prof-email').value = currentUser.email;
+
+      const preview = document.getElementById('profile-avatar-preview');
+      if (currentUser.avatar && currentUser.avatar.startsWith('data:')) {
+        preview.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+      } else {
+        preview.textContent = currentUser.avatar || currentUser.name.charAt(0).toUpperCase();
+      }
+
+      renderSavedInProfile();
+      openModal('profile-modal');
+    }
+
+    function handleProfileUpdate(e) {
+      e.preventDefault();
+      const t = I18N[currentLang];
+      currentUser.name = document.getElementById('prof-name').value.trim();
+      const uname = document.getElementById('prof-uname').value.trim();
+      currentUser.username = uname.startsWith('@') ? uname : '@' + uname;
+
+      localStorage.setItem("eventpulse_user", JSON.stringify(currentUser));
+      updateUserNav();
+      closeModal('profile-modal');
+      showToast(t.toastProfileUpdated);
+    }
+
+    function handleCustomAvatarUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        currentUser.avatar = evt.target.result;
+        const preview = document.getElementById('profile-avatar-preview');
+        preview.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+        localStorage.setItem("eventpulse_user", JSON.stringify(currentUser));
+        updateUserNav();
+        showToast(currentLang === 'kz' ? "Аватар сәтті жүктелді" : "Аватар успешно загружен");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function selectPresetAvatar(emoji) {
+      currentUser.avatar = emoji;
+      const preview = document.getElementById('profile-avatar-preview');
+      preview.innerHTML = "";
+      preview.textContent = emoji;
+      localStorage.setItem("eventpulse_user", JSON.stringify(currentUser));
+      updateUserNav();
+    }
+
+    function handleLogout() {
+      const t = I18N[currentLang];
+      currentUser = null;
+      localStorage.removeItem("eventpulse_user");
+      updateUserNav();
+      closeModal('profile-modal');
+      showToast(t.toastLogout);
+    }
+
+    function renderSavedInProfile() {
+      const t = I18N[currentLang];
+      const listEl = document.getElementById('profile-saved-list');
+      const savedItems = EVENTS_DATABASE.filter(e => savedEventIds.includes(e.id));
+
+      if (savedItems.length === 0) {
+        listEl.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">${t.noSavedEvents}</p>`;
+        return;
+      }
+
+      listEl.innerHTML = savedItems.map(item => {
+        const title = currentLang === 'kz' ? item.titleKz : item.titleRu;
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
+            <div>
+              <div style="font-size: 13px; font-weight: 600;">${title}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${item.date} • ${item.venueKz}</div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-detail" style="padding: 4px 8px; font-size: 11px;" onclick="closeModal('profile-modal'); openDetailModal('${item.id}')">
+                ${t.detailBtn}
+              </button>
+              <button class="btn-detail" style="padding: 4px 8px; font-size: 11px; color: #EF4444;" onclick="toggleSaveEvent('${item.id}')">
+                &times;
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ==========================================================================
+       9. TOAST NOTIFICATIONS
+       ========================================================================== */
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<span>🔔</span><span>${msg}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    /* ==========================================================================
+       10. INITIALIZATION
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      setLanguage(currentLang);
+      initGeolocation();
+    });
+  </script>
+</body>
+</html>

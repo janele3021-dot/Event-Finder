@@ -1,0 +1,6 @@
+{
+  "name": "EventPulse / Оқиғалар",
+  "description": "Кәсіби іс-шаралар мен оқиғаларды іздеу және бақылау платформасы. Профессиональная платформа поиска мероприятий с геолокацией и личным кабинетом.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
